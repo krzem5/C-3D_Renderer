@@ -153,9 +153,15 @@ void renderer_rasterize_triangle(renderer_context_t ctx,float ax,float ay,float 
 	for (renderer_context_size_t y=pixel_min_y;y<=pixel_max_y;y++){
 		for (renderer_context_size_t x=pixel_min_x;x<=pixel_max_x;x++){
 			float t0=x*t0_x_mult-y*t0_y_mult+t0_bias;
+			if (t0<0){
+				continue;
+			}
 			float t1=x*t1_x_mult-y*t1_y_mult+t1_bias;
+			if (t1<0){
+				continue;
+			}
 			float t2=x*t2_x_mult-y*t2_y_mult+t2_bias;
-			if (t0<0||t1<0||t2<0){
+			if (t2<0){
 				continue;
 			}
 			float z=roundf(t0*cz+t1*az+t2*bz);
