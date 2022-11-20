@@ -18,23 +18,23 @@ typedef uint32_t renderer_pixel_t;
 
 
 typedef struct _RENDERER_CONTEXT{
-	renderer_context_size_t width;
-	renderer_context_size_t height;
-	renderer_pixel_t* pixels;
+	const renderer_context_size_t width;
+	const renderer_context_size_t height;
 	renderer_pixel_t clear_color;
-} renderer_context_t;
+	renderer_pixel_t pixels[];
+}* renderer_context_t;
 
 
 
-void renderer_context_create(renderer_context_size_t width,renderer_context_size_t height,renderer_context_t* out);
+renderer_context_t renderer_context_create(renderer_context_size_t width,renderer_context_size_t height);
 
 
 
-void renderer_context_release(renderer_context_t* ctx);
+void renderer_context_release(renderer_context_t ctx);
 
 
 
-void renderer_context_clear(renderer_context_t* ctx);
+void renderer_clear(renderer_context_t ctx);
 
 
 
