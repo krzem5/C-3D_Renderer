@@ -93,7 +93,7 @@ void renderer_flip_to_terminal(renderer_context_t ctx,_Bool use_depth_buffer){
 
 
 
-void renderer_rasterize_triangle(renderer_context_t ctx,float ax,float ay,float az,float bx,float by,float bz,float cx,float cy,float cz,renderer_pixel_t color){
+void renderer_rasterize_triangle(renderer_context_t ctx,float ax,float ay,float az,float bx,float by,float bz,float cx,float cy,float cz,renderer_rasterizer_callback_t callback){
 	float min_x=ax;
 	float max_x=ax;
 	if (bx<min_x){
@@ -138,7 +138,6 @@ void renderer_rasterize_triangle(renderer_context_t ctx,float ax,float ay,float 
 	if (pixel_max_y>=ctx->height){
 		pixel_max_y=ctx->height-1;
 	}
-	color&=RENDERER_PIXEL_COLOR_MASK;
 	float area_inv=1/((cx-ax)*(by-ay)-(cy-ay)*(bx-ax));
 	float t0_x_mult=(by-ay)*area_inv;
 	float t0_y_mult=(bx-ax)*area_inv;
@@ -172,7 +171,7 @@ void renderer_rasterize_triangle(renderer_context_t ctx,float ax,float ay,float 
 			if (pixel_z>=(ctx->pixels[x+y_offset]>>RENDERER_PIXEL_DEPTH_SHIFT)){
 				continue;
 			}
-			ctx->pixels[x+y_offset]=(pixel_z<<RENDERER_PIXEL_DEPTH_SHIFT)|color;
+			ctx->pixels[x+y_offset]=(pixel_z<<RENDERER_PIXEL_DEPTH_SHIFT)|(callback(t0,t1,t2)&RENDERER_PIXEL_COLOR_MASK);
 		}
 		y_offset+=ctx->width;
 	}

@@ -17,6 +17,10 @@ typedef uint32_t renderer_pixel_t;
 
 
 
+typedef renderer_pixel_t (*renderer_rasterizer_callback_t)(float,float,float);
+
+
+
 typedef struct _RENDERER_CONTEXT{
 	const renderer_context_size_t width;
 	const renderer_context_size_t height;
@@ -43,7 +47,7 @@ void renderer_flip_to_terminal(renderer_context_t ctx,_Bool use_depth_buffer);
 
 
 
-void renderer_rasterize_triangle(renderer_context_t ctx,float ax,float ay,float az,float bx,float by,float bz,float cx,float cy,float cz,renderer_pixel_t color);
+void renderer_rasterize_triangle(renderer_context_t ctx,float ax,float ay,float az,float bx,float by,float bz,float cx,float cy,float cz,renderer_rasterizer_callback_t callback);
 
 
 
