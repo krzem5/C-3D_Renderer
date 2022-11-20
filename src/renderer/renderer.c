@@ -1,8 +1,15 @@
+#include <math.h>
 #include <renderer.h>
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+
+
+static inline float _edge_function(float ax,float ay,float bx,float by,float cx,float cy){
+	return (cx-ax)*(by-ay)-(cy-ay)*(bx-ax);
+}
 
 
 
@@ -86,6 +93,81 @@ void renderer_flip_to_terminal(renderer_context_t ctx){
 		buffer[4]='\n';
 		buffer+=5;
 		fwrite(ctx->_terminal_line_buffer,1,buffer-ctx->_terminal_line_buffer,stdout);
+		y_offset+=ctx->width;
+	}
+}
+
+
+
+void renderer_rasterize_triangle(renderer_context_t ctx,float ax,float ay,float az,float bx,float by,float bz,float cx,float cy,float cz,renderer_pixel_t color){
+	float min_x=ax;
+	float max_x=ax;
+	if (bx<min_x){
+		min_x=bx;
+	}
+	else if (bx>max_x){
+		max_x=bx;
+	}
+	if (cx<min_x){
+		min_x=cx;
+	}
+	else if (cx>max_x){
+		max_x=cx;
+	}
+	float min_y=ay;
+	float max_y=ay;
+	if (by<min_y){
+		min_y=by;
+	}
+	else if (by>max_y){
+		max_y=by;
+	}
+	if (cy<min_y){
+		min_y=cy;
+	}
+	else if (cy>max_y){
+		max_y=cy;
+	}
+	renderer_context_size_t pixel_min_x=min_x;
+	renderer_context_size_t pixel_max_x=ceilf(max_x);
+	renderer_context_size_t pixel_min_y=min_y;
+	renderer_context_size_t pixel_max_y=ceilf(max_y);
+	if (pixel_min_x<0){
+		pixel_min_x=0;
+	}
+	if (pixel_max_x>=ctx->width){
+		pixel_max_x=ctx->width-1;
+	}
+	if (pixel_min_y<0){
+		pixel_min_y=0;
+	}
+	if (pixel_max_y>=ctx->height){
+		pixel_max_y=ctx->height-1;
+	}
+	color&=RENDERER_PIXEL_COLOR_MASK;
+	float area=_edge_function(ax,ay,bx,by,cx,cy);;
+	uint16_t y_offset=pixel_min_y*ctx->width;
+	for (renderer_context_size_t y=pixel_min_y;y<=pixel_max_y;y++){
+		for (renderer_context_size_t x=pixel_min_x;x<=pixel_max_x;x++){
+			float t0=_edge_function(ax,ay,bx,by,x,y);
+			float t1=_edge_function(bx,by,cx,cy,x,y);
+			float t2=_edge_function(cx,cy,ax,ay,x,y);
+			if (t0<0||t1<0||t2<0){
+				continue;
+			}
+			t0/=area;
+			t1/=area;
+			t2/=area;
+			float z=roundf(t0*cz+t1*az+t2*bz);
+			if (z<0||z>255){
+				continue;
+			}
+			uint8_t pixel_z=z;
+			if (pixel_z>=(ctx->pixels[x+y_offset]>>RENDERER_PIXEL_DEPTH_SHIFT)){
+				continue;
+			}
+			ctx->pixels[x+y_offset]=(pixel_z<<RENDERER_PIXEL_DEPTH_SHIFT)|color;
+		}
 		y_offset+=ctx->width;
 	}
 }

@@ -43,4 +43,8 @@ void renderer_flip_to_terminal(renderer_context_t ctx);
 
 
 
+void renderer_rasterize_triangle(renderer_context_t ctx,float ax,float ay,float az,float bx,float by,float bz,float cx,float cy,float cz,renderer_pixel_t color);
+
+
+
 #endif
