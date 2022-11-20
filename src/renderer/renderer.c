@@ -7,12 +7,6 @@
 
 
 
-static inline float _edge_function(float ax,float ay,float bx,float by,float cx,float cy){
-	return (cx-ax)*(by-ay)-(cy-ay)*(bx-ax);
-}
-
-
-
 renderer_context_t renderer_context_create(renderer_context_size_t width,renderer_context_size_t height){
 	struct _RENDERER_CONTEXT ctx_data={
 		width,
@@ -46,7 +40,7 @@ void renderer_clear(renderer_context_t ctx){
 
 
 
-void renderer_flip_to_terminal(renderer_context_t ctx){
+void renderer_flip_to_terminal(renderer_context_t ctx,_Bool use_depth_buffer){
 	if (!ctx->_terminal_line_buffer){
 		ctx->_terminal_line_buffer=malloc(21*ctx->width+5);
 	}
@@ -55,7 +49,7 @@ void renderer_flip_to_terminal(renderer_context_t ctx){
 		char* buffer=ctx->_terminal_line_buffer;
 		renderer_pixel_t current_color=0xffffffff;
 		for (renderer_context_size_t x=0;x<ctx->width;x++){
-			renderer_pixel_t color=ctx->pixels[x+y_offset]&RENDERER_PIXEL_COLOR_MASK;
+			renderer_pixel_t color=(use_depth_buffer?0x010101*(255-(ctx->pixels[x+y_offset]>>RENDERER_PIXEL_DEPTH_SHIFT)):(ctx->pixels[x+y_offset]&RENDERER_PIXEL_COLOR_MASK));
 			if (color!=current_color){
 				current_color=color;
 				uint8_t red=color>>16;
@@ -145,19 +139,25 @@ void renderer_rasterize_triangle(renderer_context_t ctx,float ax,float ay,float 
 		pixel_max_y=ctx->height-1;
 	}
 	color&=RENDERER_PIXEL_COLOR_MASK;
-	float area=_edge_function(ax,ay,bx,by,cx,cy);;
+	float area_inv=1/((cx-ax)*(by-ay)-(cy-ay)*(bx-ax));
+	float t0_x_mult=(by-ay)*area_inv;
+	float t0_y_mult=(bx-ax)*area_inv;
+	float t0_bias=ay*t0_y_mult-ax*t0_x_mult;
+	float t1_x_mult=(cy-by)*area_inv;
+	float t1_y_mult=(cx-bx)*area_inv;
+	float t1_bias=by*t1_y_mult-bx*t1_x_mult;
+	float t2_x_mult=(ay-cy)*area_inv;
+	float t2_y_mult=(ax-cx)*area_inv;
+	float t2_bias=cy*t2_y_mult-cx*t2_x_mult;
 	uint16_t y_offset=pixel_min_y*ctx->width;
 	for (renderer_context_size_t y=pixel_min_y;y<=pixel_max_y;y++){
 		for (renderer_context_size_t x=pixel_min_x;x<=pixel_max_x;x++){
-			float t0=_edge_function(ax,ay,bx,by,x,y);
-			float t1=_edge_function(bx,by,cx,cy,x,y);
-			float t2=_edge_function(cx,cy,ax,ay,x,y);
+			float t0=x*t0_x_mult-y*t0_y_mult+t0_bias;
+			float t1=x*t1_x_mult-y*t1_y_mult+t1_bias;
+			float t2=x*t2_x_mult-y*t2_y_mult+t2_bias;
 			if (t0<0||t1<0||t2<0){
 				continue;
 			}
-			t0/=area;
-			t1/=area;
-			t2/=area;
 			float z=roundf(t0*cz+t1*az+t2*bz);
 			if (z<0||z>255){
 				continue;

@@ -39,7 +39,7 @@ void renderer_clear(renderer_context_t ctx);
 
 
 
-void renderer_flip_to_terminal(renderer_context_t ctx);
+void renderer_flip_to_terminal(renderer_context_t ctx,_Bool use_depth_buffer);
 
 
 
