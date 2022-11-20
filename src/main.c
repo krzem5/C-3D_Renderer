@@ -2,12 +2,13 @@
 #define WIN32_LEAN_AND_MEAN 1
 #include <windows.h>
 #else
-#include <time.h>
 #include <sys/select.h>
 #endif
+#include <math.h>
 #include <renderer.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <time.h>
 
 
 
@@ -49,6 +50,20 @@ static void sleep(uint64_t time_ns){
 
 
 
+static uint64_t get_time(void){
+#ifdef _MSC_VER
+	FILETIME ft;
+	GetSystemTimeAsFileTime(&ft);
+	return ((((sll_time_t)ft.dwHighDateTime)<<32)|ft.dwLowDateTime)*100-11644473600000000000;
+#else
+	struct timespec tm;
+	clock_gettime(CLOCK_REALTIME,&tm);
+	return tm.tv_sec*1000000000+tm.tv_nsec;
+#endif
+}
+
+
+
 int main(int argc,const char** argv){
 #ifdef _MSC_VER
 	SetConsoleOutputCP(CP_UTF8);
@@ -56,12 +71,15 @@ int main(int argc,const char** argv){
 #endif
 	renderer_context_t ctx=renderer_context_create(32,16);
 	ctx->clear_color=0xffffff;
+	uint64_t start_time=get_time();
 	while (1){
+		float tm=(get_time()-start_time)*1e-9;
 		renderer_clear(ctx);
 		renderer_rasterize_triangle(ctx,0,0,5,10,10,5,10,0,5,0xff00ff);
 		renderer_rasterize_triangle(ctx,0,0,5,0,10,5,10,10,5,0xff00ff);
-		renderer_rasterize_triangle(ctx,0,0,9,0,5,9,10,5,1,0xffff00);
-		renderer_rasterize_triangle(ctx,0,0,9,10,5,1,10,0,1,0xffff00);
+		float rect_z=cos(tm)*4+5;
+		renderer_rasterize_triangle(ctx,0,0,rect_z,0,5,rect_z,10,5,1,0xffff00);
+		renderer_rasterize_triangle(ctx,0,0,rect_z,10,5,1,10,0,1,0xffff00);
 		fputs("\x1b[H",stdout);
 		renderer_flip_to_terminal(ctx);
 		sleep(16000000);
