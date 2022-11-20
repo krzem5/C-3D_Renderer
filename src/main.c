@@ -75,12 +75,12 @@ int main(int argc,const char** argv){
 	while (1){
 		float tm=(get_time()-start_time)*1e-9;
 		renderer_clear(ctx);
-		renderer_rasterize_triangle(ctx,0,0,127,10,10,127,10,0,127,0xff00ff);
+		renderer_rasterize_triangle(ctx,0,0,127,10,10,127,15,0,127,0xff00ff);
 		renderer_rasterize_triangle(ctx,0,0,127,0,10,127,10,10,127,0xff00ff);
 		float rect_z=sin(tm)*127+127;
 		float rect_z2=cos(tm)*127+127;
-		renderer_rasterize_triangle(ctx,0,0,rect_z,0,5,rect_z,10,5,rect_z2,0xffff00);
-		renderer_rasterize_triangle(ctx,0,0,rect_z,10,5,rect_z2,10,0,rect_z2,0xffff00);
+		renderer_rasterize_triangle(ctx,0,0,rect_z,0,5,rect_z,15,5,rect_z2,0xffff00);
+		renderer_rasterize_triangle(ctx,0,0,rect_z,15,5,rect_z2,15,0,rect_z2,0xffff00);
 		fputs("\x1b[H",stdout);
 		renderer_flip_to_terminal(ctx,0);
 		renderer_flip_to_terminal(ctx,1);
