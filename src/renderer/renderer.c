@@ -171,7 +171,7 @@ void renderer_rasterize_triangle(renderer_context_t ctx,float ax,float ay,float 
 			if (pixel_z>=(ctx->pixels[x+y_offset]>>RENDERER_PIXEL_DEPTH_SHIFT)){
 				continue;
 			}
-			ctx->pixels[x+y_offset]=(pixel_z<<RENDERER_PIXEL_DEPTH_SHIFT)|(callback(t0,t1,t2)&RENDERER_PIXEL_COLOR_MASK);
+			ctx->pixels[x+y_offset]=(pixel_z<<RENDERER_PIXEL_DEPTH_SHIFT)|(callback(t1,t2,t0)&RENDERER_PIXEL_COLOR_MASK);
 		}
 		y_offset+=ctx->width;
 	}
