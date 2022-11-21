@@ -150,24 +150,23 @@ void renderer_rasterize_triangle(renderer_context_t ctx,float ax,float ay,float 
 	float t2_bias=cy*t2_y_mult-cx*t2_x_mult;
 	uint16_t y_offset=pixel_min_y*ctx->width;
 	for (renderer_context_size_t y=pixel_min_y;y<=pixel_max_y;y++){
+		_Bool break_on_next_border=0;
 		for (renderer_context_size_t x=pixel_min_x;x<=pixel_max_x;x++){
 			float t0=x*t0_x_mult-y*t0_y_mult+t0_bias;
-			if (t0<0){
-				continue;
-			}
 			float t1=x*t1_x_mult-y*t1_y_mult+t1_bias;
-			if (t1<0){
-				continue;
-			}
 			float t2=x*t2_x_mult-y*t2_y_mult+t2_bias;
-			if (t2<0){
+			if (t0<0||t1<0||t2<0){
+				if (break_on_next_border){
+					break;
+				}
 				continue;
 			}
+			break_on_next_border=1;
 			float z=t0*cz+t1*az+t2*bz;
 			if (z<0||z>255){
 				continue;
 			}
-			uint8_t pixel_z=z;
+			uint8_t pixel_z=roundf(z);
 			if (pixel_z>=(ctx->pixels[x+y_offset]>>RENDERER_PIXEL_DEPTH_SHIFT)){
 				continue;
 			}
