@@ -163,7 +163,7 @@ void renderer_rasterize_triangle(renderer_context_t ctx,float ax,float ay,float 
 			if (t2<0){
 				continue;
 			}
-			float z=roundf(t0*cz+t1*az+t2*bz);
+			float z=t0*cz+t1*az+t2*bz;
 			if (z<0||z>255){
 				continue;
 			}
